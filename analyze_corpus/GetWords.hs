@@ -47,7 +47,7 @@ usage = do
     P.putStrLn $ "Usage: " ++ name ++ " SOURCEDIR"
 
 cleanWord :: ByteString -> ByteString
-cleanWord = BS.map toLower . BS.filter (\x -> isAlphaNum x && isAscii x)
+cleanWord = BS.map toLower . BS.filter (\x -> isAlpha x && isAscii x)
 
 recurseGetWords :: FilePath -> IO [ByteString]
 recurseGetWords path = do
