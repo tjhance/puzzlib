@@ -22,9 +22,10 @@ main = do
         then usage
         else do
             words <- fmap BS.lines . BS.readFile $ dictionary opts
-            let pattern = canonicalize (pack $ P.head args)
-            let matches = filter ((== pattern) . canonicalize) words
-            sequence_ (P.map putStrLn matches)
+            let pattern = getPattern (pack $ P.head args)
+            let fixed = fixedSet pattern
+            let matches = filter (matchesPattern' pattern fixed) words
+            sequence_ (P.map ((>> hFlush stdout) . putStrLn) matches)
 
 parseOpts :: [String] -> Options -> (Options, [String])
 parseOpts [] opts = (opts, [])
