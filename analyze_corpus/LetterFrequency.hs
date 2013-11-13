@@ -10,6 +10,7 @@ import qualified Data.List as L
 import Data.Map
 
 import System.Environment
+import System.IO
 
 import GHC.Exts (sortWith)
 
@@ -23,9 +24,27 @@ main = do
 go :: FilePath -> IO ()
 go path = do
     counts <- readCounts path
+    P.putStrLn "Letter frequencies"
     let letterFreqTable = toList $ letterFreq counts
     let sortedLetters = sortWith (negate . snd) letterFreqTable
     sequence_ (P.map print sortedLetters)
+    P.putStr "Letter entropy: "
+    P.print $ entropy (P.map snd sortedLetters)
+    hFlush stdout
+
+    P.putStrLn "Initial letter frequencies"
+    let initialLetters = sortWith (negate . snd) . toList $ freq (return . BS.head) counts
+    sequence_ (P.map print initialLetters)
+    hFlush stdout
+
+    P.putStrLn "Final letter frequencies"
+    let finalLetters = sortWith (negate . snd) . toList $ freq (return . BS.last) counts
+    sequence_ (P.map print finalLetters)
+    hFlush stdout
+
+    P.putStrLn "Bigram frequencies"
+    let bigrams = sortWith (negate . snd) . toList $ freq (kgrams 2) counts
+    sequence_ (P.map print bigrams)
 
 usage :: IO ()
 usage = do
@@ -46,8 +65,20 @@ letterFreq = freq unpack
 addData :: Ord a => Map a Int -> ([a], Int) -> Map a Int
 addData m (dat, count) = L.foldl' (flip (\x -> insertWith (+) x count)) m dat
 
-liftFst :: (a -> b) -> (a,c) -> (b,c)
 liftFst f (x,y) = (f x, y)
+liftSnd f (x,y) = (x, f y)
 
 freq :: Ord a => (ByteString -> [a]) -> [(ByteString, Int)] -> Map a Int
 freq f wordcounts = L.foldl' addData Data.Map.empty (P.map (liftFst f) wordcounts)
+
+kgrams :: Int -> ByteString -> [ByteString]
+kgrams k w = if k > BS.length w then [] else (BS.take k w) : (kgrams k (BS.drop 1 w))
+
+freqToProb :: [(a, Int)] -> [(a, Float)]
+freqToProb l = let total = fromIntegral $ L.sum (L.map snd l) in
+    L.map (liftSnd ((/ total) . fromIntegral)) l
+
+entropy :: [Int] -> Float
+entropy freqs = let total = fromIntegral $ L.sum freqs
+                    probs = L.map ((/ total) . fromIntegral) freqs in L.sum $ L.map (\p -> -p * log p) probs
+

@@ -16,6 +16,8 @@ cabal-version:       >=1.8
 
 library
   exposed-modules:     Cryptogram
+                     , Frequency
+                     , Markov
   -- other-modules:       
   build-depends:       base ==4.6.*
                      , bytestring ==0.10.*
@@ -27,6 +29,12 @@ executable cryptosearch
     main-is:        Main.hs
     build-depends:     base ==4.6.*
                      , bytestring ==0.10.*
+                     , puzzlib
+
+executable caesar
+    hs-source-dirs: caesar
+    main-is:        Main.hs
+    build-depends:     base ==4.6.*
                      , puzzlib
 
 -- Tools for analyzing corpus
