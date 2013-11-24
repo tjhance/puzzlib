@@ -21,10 +21,24 @@ main :: IO ()
 main = do
     args <- getArgs
     let (opts, args') = parseArgs defaultOptions args
-    let shifts = caesarShifts . unwords $ args'
+    go opts args'
+
+go opts [] = usage
+go opts args = do
+    let shifts = caesarShifts . unwords $ args
     if o_rated opts
         then goRated opts shifts
         else goUnrated opts shifts
+
+usage :: IO ()
+usage = do
+    name <- getProgName
+    putStrLn $ "Usage: " ++ name ++ " [OPTIONS] STRING"
+    putStrLn ""
+    putStrLn "OPTIONS can include:"
+    putStrLn "    -a        Show all shifts"
+    putStrLn "    -u / -o   Show shifts by index rather than rated"
+    putStrLn "    -r        Show shifts by rating (default)"
 
 goRated :: Options -> [String] -> IO ()
 goRated opts shifts = do
@@ -56,11 +70,6 @@ updateArgs (c:cs) o = case c of
     'o' -> updateArgs cs (o { o_rated = False })
     'r' -> updateArgs cs (o { o_rated = True })
     _ -> updateArgs cs o
-
-usage :: IO ()
-usage = do
-    name <- getProgName
-    putStrLn $ "Usage: " ++ name ++ " STRING"
 
 shift n c = if c >= 'A' && c <= 'Z' then chr ((ord c - ord 'A' + n) `mod` 26 + ord 'A') else c
 
