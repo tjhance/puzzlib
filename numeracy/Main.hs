@@ -102,7 +102,7 @@ extractRoot n k = search 1 n
 
 -- Ignores bases that result in less than 3 letters
 candidateBases :: Integer -> [Integer]
-candidateBases n = map head . group . sort . filter (\x -> x >= 26 && x^3 < n) $
+candidateBases n = map head . group . sort . filter (\x -> x >= 26 && x^2 < n) $
                    candidateBases_ n >>= (\x -> [x-26 .. x+26])
 candidateBases_ :: Integer -> [Integer]
 candidateBases_ n = map head . group . sort . filter (>= 26) $

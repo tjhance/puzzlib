@@ -18,6 +18,7 @@ library
   exposed-modules:     Cryptogram
                      , Frequency
                      , Markov
+                     , Morse
   -- other-modules:       
   build-depends:       base ==4.6.*
                      , bytestring ==0.10.*
@@ -73,5 +74,27 @@ executable letterfreq
 
 executable numeracy
     hs-source-dirs: numeracy
+    main-is:        Main.hs
+    build-depends:     base ==4.6.*
+
+executable morsify
+    hs-source-dirs: morsify
+    main-is:        Main.hs
+    build-depends:     base ==4.6.*
+                     , puzzlib
+
+executable unmorse
+    hs-source-dirs: unmorse
+    main-is:        Main.hs
+    build-depends:     base ==4.6.*
+                     , puzzlib
+
+executable wsearch
+    hs-source-dirs: wsearch
+    main-is:        Main.hs
+    build-depends:     base ==4.6.*
+
+executable anagram
+    hs-source-dirs: anagram
     main-is:        Main.hs
     build-depends:     base ==4.6.*
