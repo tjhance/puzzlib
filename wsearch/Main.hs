@@ -6,8 +6,12 @@ import qualified Prelude as P
 import System.Environment
 import System.IO
 
+import Control.Monad
+
 import Data.Char
 import Data.List
+
+import Text.Printf
 
 import GHC.Exts
 
@@ -73,9 +77,25 @@ main = do
         then usage
         else do
             words <- fmap lines . readFile $ dictionary opts
-            putStr . unlines $ matches (metric opts) (makePattern $ head args) words (cnt opts)
+            let pattern = makePattern (head args)
+            printResults pattern opts $ matches (metric opts) pattern words
 
-matches metric pattern words cnt = take cnt . sortWith (grade metric pattern) . filter ((/= Infinity) . grade metric pattern) $ words
+matches metric pattern words = sortWith (grade metric pattern) . filter ((/= Infinity) . grade metric pattern) $ words
+
+-- Assumes that all strings have length equal to the length of the pattern
+printResults pattern opts words = do
+    putStr . unlines . take (cnt opts) $ words
+    printf "------------------\n"
+    printf "%d total matches\n\n" (length words)
+    printf "Positional entropy\n"
+    printf "------------------\n"
+    forM_ gradedPositions (\(e,p) -> printf "%d\t%f bits\n" p e)
+        where gradedPositions = reverse . sort . filter (\(e,p) -> e > 0) . map (\p -> (positionEntropy (p-1) words, p)) $ [1..length pattern]
+
+positionEntropy k = entropy . map (fromIntegral . length) . groupWith (!! k)
+
+entropy :: [Double] -> Double
+entropy xs = sum . map (\x -> -x * log x / log 2) . map (/ sum xs) . filter (/= 0) $ xs
 
 makePattern :: String -> [Maybe Char]
 makePattern [] = []
