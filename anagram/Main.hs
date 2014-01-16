@@ -75,4 +75,13 @@ parseOpts (a:as) opts = case a of
 usage :: IO ()
 usage = do
     name <- getProgName
-    P.putStrLn $ "Usage: " ++ name ++ " [OPTIONS] PATTERN"
+    P.putStr . unlines $ [
+        "Usage: " ++ name ++ " [OPTIONS] PATTERN",
+        "Search for anagrams of the given string. Wildcards may be represented with",
+        "either a period (.) or a question mark (?).",
+        "",
+        "OPTIONS may include",
+        "   -d dictionary       Set the dictionary to use (default: /usr/share/dict/words)",
+        "   -w                  Include subword anagrams",
+        "   -m length           Only include anagrams at least the given length (only matters with -w)"
+        ]

@@ -7,28 +7,37 @@ import Data.List
 main :: IO ()
 main = do
     a <- getArgs
-    let n = read (a !! 0) :: Integer
+    if null a then usage else do
+        let n = read (a !! 0) :: Integer
 
-    putStr "Base 26 (A=0):\t"
-    putStrLn $ base26 n
+        putStr "Base 26 (A=0):\t"
+        putStrLn $ base26 n
 
-    case base36 n of
-        Nothing -> return ()
-        Just b36str -> putStrLn $ "Base 36:\t" ++ b36str
-    case base100 n of
-        Nothing -> return ()
-        Just b100str -> putStrLn $ "Base 100 (A=1):\t" ++ b100str
-    case base100' n of
-        Nothing -> return ()
-        Just b100str -> putStrLn $ "Base 100 (A=0):\t" ++ b100str
-    case ascii n of
-        Nothing -> return ()
-        Just str -> putStrLn $ "ASCII:\t\t" ++ str
+        case base36 n of
+            Nothing -> return ()
+            Just b36str -> putStrLn $ "Base 36:\t" ++ b36str
+        case base100 n of
+            Nothing -> return ()
+            Just b100str -> putStrLn $ "Base 100 (A=1):\t" ++ b100str
+        case base100' n of
+            Nothing -> return ()
+            Just b100str -> putStrLn $ "Base 100 (A=0):\t" ++ b100str
+        case ascii n of
+            Nothing -> return ()
+            Just str -> putStrLn $ "ASCII:\t\t" ++ str
 
-    hFlush stdout
-    putStrLn "Trying other bases..."
-    let large_candidates = candidateBases n
-    mapM_ (($ n) . tryBase) large_candidates
+        hFlush stdout
+        putStrLn "Trying other bases..."
+        let large_candidates = candidateBases n
+        mapM_ (($ n) . tryBase) large_candidates
+
+usage :: IO ()
+usage = do
+    name <- getProgName
+    putStr . unlines $ [
+        "Usage: " ++ name ++ " [OPTIONS] PATTERN",
+        "Try writing a number in various bases to see if words come out."
+        ]
     
 tryBase :: Integer -> Integer -> IO ()
 tryBase d n = case baseStr d n of

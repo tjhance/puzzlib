@@ -63,10 +63,12 @@ arc x y = if isAlpha x && isAlpha y then Cost . fromIntegral $ 26 + arc' x y els
 data Options = Options { dictionary :: String
                        , metric :: Metric 
                        , cnt :: Int
+                       , quiet :: Bool
                        }
 defaultOptions = Options { dictionary = "/usr/share/dict/words"
                          , metric = exact
                          , cnt = 20
+                         , quiet = False
                          }
 
 main :: IO ()
@@ -85,12 +87,14 @@ matches metric pattern words = sortWith (grade metric pattern) . filter ((/= Inf
 -- Assumes that all strings have length equal to the length of the pattern
 printResults pattern opts words = do
     putStr . unlines . take (cnt opts) $ words
-    printf "------------------\n"
-    printf "%d total matches\n\n" (length words)
-    printf "Positional entropy\n"
-    printf "------------------\n"
-    forM_ gradedPositions (\(e,p) -> printf "%d\t%f bits\n" p e)
-        where gradedPositions = reverse . sort . filter (\(e,p) -> e > 0) . map (\p -> (positionEntropy (p-1) words, p)) $ [1..length pattern]
+    if quiet opts then return () else do
+        printf "------------------\n"
+        printf "%d total matches\n\n" (length words)
+        printf "Positional entropy\n"
+        printf "------------------\n"
+        forM_ gradedPositions (\(e,p) -> printf "%d\t%f bits\n" p e)
+    where gradedPositions = reverse . sort . filter (\(e,p) -> e > 0) . map (\p -> (positionEntropy (p-1) words, p)) $ [1..length pattern]
+
 
 positionEntropy k = entropy . map (fromIntegral . length) . groupWith (!! k)
 
@@ -120,9 +124,25 @@ parseOpts (a:as) opts = case a of
     "-h"        -> parseOpts as (opts { metric = hamming })
     "--hamming" -> parseOpts as (opts { metric = hamming })
     "-n"        -> parseOpts (P.tail as) (opts { cnt = read $ P.head as })
+    "-q"        -> parseOpts as (opts { quiet = True })
     x           -> let (r_opts, r_args) = parseOpts as opts in (r_opts, x:r_args)
 
 usage :: IO ()
 usage = do
     name <- getProgName
-    P.putStrLn $ "Usage: " ++ name ++ " [OPTIONS] PATTERN"
+    P.putStr . unlines $ [
+        "Usage: " ++ name ++ " [OPTIONS] PATTERN",
+        "Search for words matching the given pattern. The pattern is a simple string",
+        "that may include wildcards, which are denoted with eitehr a period (.)",
+        "or a question mark (?). You can also search for partial matches with",
+        "various metrics. By default, only exact matches are returned.",
+        "Example: " ++ name ++ " ...er.l",
+        "",
+        "OPTIONS may include",
+        "   -d dictionary       Set the dictionary to use (default: /usr/share/dict/words)",
+        "   --arc               Use a variant of the metric treating the alphabet as a circle",
+        "   --line              Use a variant of the metric treating the alphabet as a line",
+        "   -h/--hamming        Use the Hamming metric",
+        "   -n number           Set how many of the top results to print",
+        "   -q                  Do not print the entropy information"
+        ]

@@ -28,4 +28,10 @@ parseOpts (a:as) opts = case a of
 usage :: IO ()
 usage = do
     name <- getProgName
-    putStrLn $ "Usage: " ++ name ++ " [OPTIONS] FILE"
+    putStr . unlines $ [
+        "Usage: " ++ name ++ " [OPTIONS] FILE",
+        "Translate the specified file to Morse Code",
+        "",
+        "OPTIONS may include",
+        "   -s      Include spaces after each morsified character"
+        ]

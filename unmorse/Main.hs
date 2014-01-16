@@ -34,4 +34,11 @@ parseOpts (a:as) opts = case a of
 usage :: IO ()
 usage = do
     name <- getProgName
-    putStrLn $ "Usage: " ++ name ++ " [OPTIONS] PATTERN"
+    putStr . unlines $ [
+        "Usage: " ++ name ++ " [OPTIONS] PATTERN",
+        "Translate a morse code sequence to a single word without knowing the character boundaries.",
+        "Example: " ++ name ++ " ---..-...-.----.--...-.-.",
+        "",
+        "OPTIONS may include",
+        "   -d dictionary       Set the dictionary to use (default: /usr/share/dict/words)"
+        ]

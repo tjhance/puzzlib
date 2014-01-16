@@ -36,4 +36,13 @@ parseOpts (a:as) opts = case a of
 usage :: IO ()
 usage = do
     name <- getProgName
-    P.putStrLn $ "Usage: " ++ name ++ " [OPTIONS] PATTERN"
+    P.putStr . P.unlines $ [
+        "Usage: " ++ name ++ " [OPTIONS] PATTERN",
+        "Search for words that can be a cryptogram of the given string.",
+        "Use lowercase letters for letters that need to be substituted",
+        "and uppercase letters for known letters in the result",
+        "Example: " ++ name ++ " abVbcb",
+        "",
+        "OPTIONS may include",
+        "   -d dictionary       Set the dictionary to use (default: /usr/share/dict/words)"
+        ]
