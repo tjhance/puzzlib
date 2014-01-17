@@ -143,6 +143,6 @@ usage = do
         "   --arc               Use a variant of the metric treating the alphabet as a circle",
         "   --line              Use a variant of the metric treating the alphabet as a line",
         "   -h/--hamming        Use the Hamming metric",
-        "   -n number           Set how many of the top results to print",
+        "   -n number           Set how many of the top results to print (default: 20)",
         "   -q                  Do not print the entropy information"
         ]
