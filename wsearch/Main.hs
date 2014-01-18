@@ -64,11 +64,13 @@ data Options = Options { dictionary :: String
                        , metric :: Metric 
                        , cnt :: Int
                        , quiet :: Bool
+                       , max_dist :: Cost
                        }
 defaultOptions = Options { dictionary = "/usr/share/dict/words"
-                         , metric = exact
+                         , metric = hamming
                          , cnt = 20
                          , quiet = False
+                         , max_dist = 0
                          }
 
 main :: IO ()
@@ -80,9 +82,9 @@ main = do
         else do
             words <- fmap lines . readFile $ dictionary opts
             let pattern = makePattern (head args)
-            printResults pattern opts $ matches (metric opts) pattern words
+            printResults pattern opts $ matches (metric opts) pattern words (max_dist opts)
 
-matches metric pattern words = sortWith (grade metric pattern) . filter ((/= Infinity) . grade metric pattern) $ words
+matches metric pattern words radius = takeWhile ((<= radius) . grade metric pattern) . sortWith (grade metric pattern) . filter ((/= Infinity) . grade metric pattern) $ words
 
 -- Assumes that all strings have length equal to the length of the pattern
 printResults pattern opts words = do
@@ -125,6 +127,7 @@ parseOpts (a:as) opts = case a of
     "--hamming" -> parseOpts as (opts { metric = hamming })
     "-n"        -> parseOpts (P.tail as) (opts { cnt = read $ P.head as })
     "-q"        -> parseOpts as (opts { quiet = True })
+    "-r"        -> parseOpts (P.tail as) (opts { max_dist = Cost . read $ P.head as })
     x           -> let (r_opts, r_args) = parseOpts as opts in (r_opts, x:r_args)
 
 usage :: IO ()
@@ -135,7 +138,7 @@ usage = do
         "Search for words matching the given pattern. The pattern is a simple string",
         "that may include wildcards, which are denoted with eitehr a period (.)",
         "or a question mark (?). You can also search for partial matches with",
-        "various metrics. By default, only exact matches are returned.",
+        "various metrics. By default, the Hamming metric is used with max distance 0.",
         "Example: " ++ name ++ " ...er.l",
         "",
         "OPTIONS may include",
@@ -144,5 +147,6 @@ usage = do
         "   --line              Use a variant of the metric treating the alphabet as a line",
         "   -h/--hamming        Use the Hamming metric",
         "   -n number           Set how many of the top results to print (default: 20)",
-        "   -q                  Do not print the entropy information"
+        "   -q                  Do not print the entropy information",
+        "   -r                  Set the maximum distance from the pattern (default: 0)"
         ]
